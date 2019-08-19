@@ -117,7 +117,7 @@ if (isset($_SERVER['HTTP_HOST'])){
     /* register CLASSPATH */
     function my_autoloader($class) {
         $classpath = '/classes/class.'.$class.'.php';
-        $file = '/var/www/html/big5' . $classpath;
+        $file = '/var/www/big5' . $classpath;
 
         /* check class root folder*/
         if (file_exists($file)) {
