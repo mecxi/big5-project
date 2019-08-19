@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Parser Demo</title>
+    <!--<script src="https://code.jquery.com/jquery-1.11.3.js"></script>-->
+</head>
+<body>
+<h3>Afcon Semi Finals Line-Ups result from int.soccerway.com</h3>
+<div style="border:1px solid #C0C0C0" id="teamA"></div><br>
+<div style="border:1px solid #C0C0C0" id="teamB"></div>
+<script src="lib/jquery/jquery-1.11.3.min.js"></script>
+<script>
+    var base_url = 'http://int.soccerway.com';
+    /* pull today afcon lineups from soccerway
+    * the function uses a recursion flow process in order to fetch up-to-date data
+    * */
+    pull_afcon_lineups({
+        req_link:'http://int.soccerway.com',
+        word: 'Africa Cup of Nations',
+        flow: 1
+    });
+
+    var teamA = {}, teamB = {};
+
+    function pull_afcon_lineups(obj) {
+        $.ajax({
+            url: 'http://192.168.1.200/big5/sample.php',
+            data: JSON.stringify({
+                link: obj.req_link
+            }),
+            type: 'POST',
+            success: function (result) {
+                //alert(result);
+                var el = $('<div></div>');
+                el.html(result);
+                switch (obj.flow) {
+                    case 1:
+                            // flow 1: select AFCON LINK
+                        $(".submenu .first-group:nth-child(3)", el).each(function () {
+                            var ach = $('<div></div>');
+                            ach.html($(this).html());
+                            $('li a', ach).each(function () {
+                                //alert($(this).text());
+                                if ($(this).text() == obj.word) {
+                                    /* assign new link flow */
+                                    obj.req_link = base_url + $(this).attr('href');
+                                    obj.flow = 2;
+                                    alert('PROCESS 1 success - following link : ' + obj.req_link + '\n click OK');
+                                    pull_afcon_lineups(obj);
+                                }
+                            });
+                        });
+                        break;
+                    case 2:
+                            // flow 2 : AFCON link has been selected | select semi-finals stats for now
+                        $("h2:contains('Semi-finals')", el).each(function () {
+                            //alert($(this).text());
+                            var ach = $('<div></div>');
+                            ach.html($(this).next().html());
+                            $('.table-container table tbody tr:nth-child(1) td:nth-child(4) a', ach).each(function () {
+                                obj.req_link = base_url + $(this).attr('href');
+                                obj.flow = 3;
+                                alert('PROCESS 2 success - following link : ' + obj.req_link + '\n click OK');
+                                pull_afcon_lineups(obj);
+                            });
+                        });
+                        break;
+                    case 3:
+                        // flow 3: Process and collect semi-finals stats
+                        alert('PROCESS 3 success - Result for the semi-finals collected in JSON format. Click OK to view');
+                        /* fetch team title */
+                        var team = [];
+                            $("h2:contains('Info')", el).each(function(){
+                                var info = $('<div></div>');
+                                info.html($(this).next().html());
+                                $('.container h3 a', info).each(function(){
+                                   team.push($(this).text())
+                                });
+                            });
+
+                        /* fetch players lines-up */
+                        var players = [];
+                        $("h2:contains('Lineups')", el).each(function(){
+                            //alert($(this).text());
+                            var lineups = $('<div></div>');
+                            lineups.html($(this).next().html());
+                            $('.playerstats tbody tr', lineups).each(function(){
+                                var list = [];
+                                var ls = $('<div></div>');
+                                ls.html($(this).html());
+                                $('td', ls).each(function(){
+                                    list.push($(this).text().trim());
+                                });
+                                players.push(list);
+                            });
+                        });
+
+                        /* create a stats object */
+                        var legA = {}, legB = {};
+                            /* initialise */
+                            legA.team = team[0];
+                            legA.lineups = [];
+                            legB.team = team[1];
+                            legB.lineups = [];
+                            for(var i=0; i < players.length; ++i){
+                                if (i > 11){
+                                    /* LegB team */
+                                    if (i < 23){
+                                        /* 11 players lines ups */
+                                        legB.lineups.push({
+                                            no:players[i][0],
+                                            name:players[i][1],
+                                            booking:players[i][2]
+                                        });
+                                    } else {
+                                        /* coach info */
+                                        legB.lineups.push({
+                                            coach:players[i][0]
+                                        });
+                                    }
+
+                                } else {
+                                    /* legA team */
+                                    if (i < 11){
+                                        /* 11 players lines ups */
+                                        legA.lineups.push({
+                                            no:players[i][0],
+                                            name:players[i][1],
+                                            booking:players[i][2]
+                                        });
+                                    } else {
+                                        /* coach info */
+                                        legA.lineups.push({
+                                            coach:players[i][0]
+                                        });
+                                    }
+                                }
+                            }
+
+                        teamA = JSON.stringify(legA);
+                        teamB = JSON.stringify(legB);
+                           /* show console result */
+//                        console.log(players);
+//                        console.log(team);
+//                        console.log(legA);
+//                        console.log(legB);
+                            alert('TEAM A LINEUP : ' + teamA);
+                            alert('TEAM B LINEUP : ' + teamB);
+
+                           /* Output result */
+                            $('#teamA').text(teamA);
+                            $('#teamB').text(teamB);
+
+                        break;
+                }
+
+            },
+            error: function () {
+                console.log('Error connecting to the server');
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

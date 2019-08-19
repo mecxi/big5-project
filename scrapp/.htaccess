@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+# Turn on the engine:
+RewriteEngine on
+
+# Set the base to this directory:
+RewriteBase /big5/scrapp/
+
+# Redirect certain paths to index.php for viewing:
+RewriteRule ^([0-9]+)/?$ index.php?view=$1
+RewriteRule ^([abc]+)/?$ index.php?view=$1
+RewriteRule ^(rugby|soccer)/?$ index.php?view=$1
+
+# hide .php filename extension
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php
+
+</IfModule>

@@ -1,0 +1,23 @@
+/* Custom CSS display */
+
+.log-box {
+    background-color: #00004c;
+    overflow-y: scroll;
+    font-family: "Courier New", sans-serif !important;
+    height: 200px;
+    border: 1px solid #C0C0C0;
+    color: white;
+    font-size:11px !important;
+}
+
+.radio-opt {
+    font-family: "Dosis", sans-serif;
+    letter-spacing: 1px;
+    text-rendering: optimizeLegibility;
+}
+
+.referenced-box {
+    height:200px;
+    /*border: 1px dashed red;*/
+    overflow-y: scroll ;
+}
